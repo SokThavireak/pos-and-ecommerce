@@ -28,9 +28,9 @@ export class BackupService {
       where: { role: UserRole.ADMIN },
     });
 
+    const systemAdminSecret = process.env.ADMIN_BACKUP_SECRET;
     const isValidPassword =
-      dto.adminPassword === 'admin123' ||
-      dto.adminPassword === 'AdminPass2026!' ||
+      (systemAdminSecret && dto.adminPassword === systemAdminSecret) ||
       (adminUser && adminUser.passwordHash === dto.adminPassword);
 
     if (!isValidPassword) {
@@ -45,18 +45,24 @@ export class BackupService {
       this.settingsRepo.find(),
     ]);
 
+    // Security: Strip passwordHash so backups never leak credentials
+    const sanitizedUsers = users.map((u) => {
+      const { passwordHash, ...safe } = u as any;
+      return safe;
+    });
+
     const snapshot = {
       version: '1.0',
       exportedAt: new Date().toISOString(),
       system: 'BioLabs POS & E-Commerce Core',
       stats: {
-        usersCount: users.length,
+        usersCount: sanitizedUsers.length,
         categoriesCount: categories.length,
         productsCount: products.length,
         ordersCount: orders.length,
       },
       data: {
-        users,
+        users: sanitizedUsers,
         categories,
         products,
         orders,
@@ -81,10 +87,9 @@ export class BackupService {
       where: { role: UserRole.ADMIN },
     });
 
-    // Accept matching admin password or default system master pass
+    const systemAdminSecret = process.env.ADMIN_BACKUP_SECRET;
     const isValidPassword =
-      dto.adminPassword === 'admin123' ||
-      dto.adminPassword === 'AdminPass2026!' ||
+      (systemAdminSecret && dto.adminPassword === systemAdminSecret) ||
       (adminUser && adminUser.passwordHash === dto.adminPassword);
 
     if (!isValidPassword) {

@@ -1,8 +1,11 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '../../database/entities/user.entity';
 
 @Controller('api/users')
+@Roles(UserRole.OWNER, UserRole.ADMIN)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

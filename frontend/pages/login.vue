@@ -202,6 +202,10 @@
             </div>
           </div>
 
+          <div v-if="errorMessage" class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium text-center">
+            {{ errorMessage }}
+          </div>
+
           <!-- High-Contrast Solid White Pill Button -->
           <button
             type="submit"
@@ -285,20 +289,25 @@ const fillDemo = (role: 'owner' | 'admin' | 'cashier' | 'customer') => {
   }
 };
 
-const handleSubmit = () => {
-  // Sync state to authStore
-  if (email.value.includes('owner')) {
-    authStore.loginAs('OWNER');
-    router.push('/admin');
-  } else if (email.value.includes('admin')) {
-    authStore.loginAs('ADMIN');
-    router.push('/admin/settings');
-  } else if (email.value.includes('cashier')) {
-    authStore.loginAs('CASHIER');
-    router.push('/pos');
-  } else {
-    authStore.loginAs('CUSTOMER');
-    router.push('/');
+const errorMessage = ref('');
+
+const handleSubmit = async () => {
+  errorMessage.value = '';
+  try {
+    const res = await authStore.login(email.value.trim(), password.value);
+    const role = res.user?.role;
+    if (role === 'OWNER') {
+      router.push('/admin');
+    } else if (role === 'ADMIN') {
+      router.push('/admin/settings');
+    } else if (role === 'CASHIER') {
+      router.push('/pos');
+    } else {
+      router.push('/');
+    }
+  } catch (err: any) {
+    // If backend is offline or fallback requested
+    errorMessage.value = err.data?.message || 'Login failed. Please verify credentials.';
   }
 };
 </script>

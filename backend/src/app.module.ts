@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './database/entities/user.entity';
@@ -14,6 +15,13 @@ import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { BackupModule } from './modules/backup/backup.module';
+import { AuthModule } from './modules/auth/auth.module';
+
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
+import { AuditRouteInterceptor } from './modules/audit/audit.interceptor';
+import { RolesGuard } from './common/guards/roles.guard';
+
+import { ThrottleRateLimitGuard } from './common/guards/throttle-rate-limit.guard';
 
 @Module({
   imports: [
@@ -29,6 +37,7 @@ import { BackupModule } from './modules/backup/backup.module';
       logging: false,
     }),
     TypeOrmModule.forFeature([User, Category, Product, Order, OrderItem, StoreSettings]),
+    AuthModule,
     EventsModule,
     SettingsModule,
     CatalogModule,
@@ -37,6 +46,20 @@ import { BackupModule } from './modules/backup/backup.module';
     AuditModule,
     BackupModule,
   ],
-  providers: [DatabaseSeederService],
+  providers: [
+    DatabaseSeederService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditRouteInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottleRateLimitGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

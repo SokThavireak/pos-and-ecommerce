@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource, MoreThan } from 'typeorm';
 import { Order, OrderStatus } from '../../database/entities/order.entity';
 import { OrderItem } from '../../database/entities/order-item.entity';
 import { Product } from '../../database/entities/product.entity';
@@ -15,6 +15,7 @@ export class OrdersService {
     @InjectRepository(OrderItem) private orderItemRepo: Repository<OrderItem>,
     @InjectRepository(Product) private productRepo: Repository<Product>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    private dataSource: DataSource,
     private appGateway: AppGateway,
   ) {}
 
@@ -38,38 +39,81 @@ export class OrdersService {
     const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    const order = this.orderRepo.create({
-      user,
-      source: dto.source,
-      status: OrderStatus.PENDING,
-      totalAmount: dto.totalAmount,
+    // 1. Double-Submit Protection: Check for identical order in last 5 seconds
+    const fiveSecondsAgo = new Date(Date.now() - 5000);
+    const recentDuplicate = await this.orderRepo.findOne({
+      where: {
+        user: { id: user.id },
+        totalAmount: dto.totalAmount,
+        createdAt: MoreThan(fiveSecondsAgo),
+      },
+      relations: ['items', 'items.product'],
     });
-    const savedOrder = await this.orderRepo.save(order);
 
-    const items: OrderItem[] = [];
-    for (const itemDto of dto.items) {
-      const product = await this.productRepo.findOne({ where: { id: itemDto.productId } });
-      if (product) {
-        product.stock = Math.max(0, product.stock - itemDto.quantity);
-        await this.productRepo.save(product);
-        this.appGateway.broadcastInventoryUpdate({
-          productId: product.id,
-          newStock: product.stock,
+    if (recentDuplicate) {
+      return recentDuplicate;
+    }
+
+    // 2. ACID Transaction with Pessimistic Row Locking (Prevents Race Conditions & Overselling)
+    return this.dataSource.transaction(async (manager) => {
+      const order = manager.create(Order, {
+        user,
+        source: dto.source,
+        status: OrderStatus.PENDING,
+        totalAmount: dto.totalAmount,
+      });
+      const savedOrder = await manager.save(Order, order);
+
+      const items: OrderItem[] = [];
+      const updatedProducts: { id: string; stock: number }[] = [];
+
+      for (const itemDto of dto.items) {
+        // PESSIMISTIC_WRITE puts a row-level lock in PostgreSQL (SELECT ... FOR UPDATE)
+        // If 2 users buy the last unit at the exact same millisecond, the 2nd user waits
+        // until the 1st user's transaction finishes!
+        const product = await manager.findOne(Product, {
+          where: { id: itemDto.productId },
+          lock: { mode: 'pessimistic_write' },
         });
 
-        const orderItem = this.orderItemRepo.create({
+        if (!product) {
+          throw new NotFoundException(`Product not found (ID: ${itemDto.productId})`);
+        }
+
+        // Strict Stock Check: Prevents selling when stock is insufficient
+        if (product.stock < itemDto.quantity) {
+          throw new BadRequestException(
+            `Out of stock: "${product.name}" has only ${product.stock} units remaining (Requested: ${itemDto.quantity}).`,
+          );
+        }
+
+        // Deduct inventory atomically
+        product.stock -= itemDto.quantity;
+        await manager.save(Product, product);
+        updatedProducts.push({ id: product.id, stock: product.stock });
+
+        const orderItem = manager.create(OrderItem, {
           order: savedOrder,
           product,
           quantity: itemDto.quantity,
           unitPrice: itemDto.unitPrice,
         });
-        items.push(await this.orderItemRepo.save(orderItem));
+        items.push(await manager.save(OrderItem, orderItem));
       }
-    }
 
-    savedOrder.items = items;
-    this.appGateway.broadcastOrderUpdate(savedOrder);
-    return savedOrder;
+      savedOrder.items = items;
+
+      // Broadcast inventory & order updates via WebSocket after transaction commits
+      for (const p of updatedProducts) {
+        this.appGateway.broadcastInventoryUpdate({
+          productId: p.id,
+          newStock: p.stock,
+        });
+      }
+      this.appGateway.broadcastOrderUpdate(savedOrder);
+
+      return savedOrder;
+    });
   }
 
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {

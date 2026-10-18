@@ -35,3 +35,4 @@ Thumbs.db
 # Docker volumes
 pgdata/
 *.log
+push_to_github.sh

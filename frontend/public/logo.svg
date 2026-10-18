@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 36" fill="none">
+  <rect width="36" height="36" rx="10" fill="#d97757" />
+  <path d="M12 10C12 8.89543 12.8954 8 14 8H20C22.2091 8 24 9.79086 24 12C24 13.5684 23.0978 14.9257 21.7895 15.5789C23.4475 16.2739 24.5 17.9256 24.5 19.8C24.5 22.1196 22.6196 24 20.3 24H14C12.8954 24 12 23.1046 12 22V10Z" fill="white" fill-opacity="0.2"/>
+  <circle cx="18" cy="18" r="5" fill="white" />
+  <text x="46" y="24" font-family="Plus Jakarta Sans, sans-serif" font-size="19" font-weight="800" letter-spacing="-0.5" fill="#171717">biolabs</text>
+</svg>

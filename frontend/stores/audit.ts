@@ -10,11 +10,13 @@ export type ActivityCategory =
   | 'SECURITY_EVENT'
   | 'ORDER_MUTATION';
 
+export type AuditRole = 'OWNER' | 'ADMIN' | 'CASHIER' | 'SYSTEM' | 'CUSTOMER';
+
 export interface AuditLogItem {
   id: string;
   actorName: string;
-  role: 'OWNER' | 'ADMIN' | 'CASHIER' | 'SYSTEM';
-  category: string;
+  role: AuditRole;
+  category?: string;
   actionDescription: string;
   timeAgo: string;
   meta: string;
@@ -154,7 +156,7 @@ export const useAuditStore = defineStore('audit', {
   actions: {
     recordActivity(item: {
       actorName: string;
-      role: 'OWNER' | 'ADMIN' | 'CASHIER' | 'SYSTEM';
+      role: AuditRole;
       category?: string;
       actionDescription: string;
       meta?: string;

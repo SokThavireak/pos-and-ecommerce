@@ -43,4 +43,10 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.emit('inventory:updated', data);
     }
   }
+
+  broadcastOrderUpdate(order: any) {
+    if (this.server) {
+      this.server.emit('order:updated', order);
+    }
+  }
 }

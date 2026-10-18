@@ -184,7 +184,7 @@ function handleCreateUser(payload: any) {
   activityLogs.value.unshift({
     id: `act-${Date.now()}`,
     actorName: authStore.user?.fullName || 'Current User',
-    role: authStore.currentRole,
+    role: authStore.currentRole || 'ADMIN',
     actionDescription: `Provisioned new user account: ${payload.fullName} (${payload.role})`,
     timeAgo: 'Just now',
     meta: `Email: ${payload.email}`,
@@ -205,7 +205,7 @@ function saveUserEdit() {
     activityLogs.value.unshift({
       id: `act-${Date.now()}`,
       actorName: authStore.user?.fullName || 'Store Owner',
-      role: authStore.currentRole,
+      role: authStore.currentRole || 'OWNER',
       actionDescription: `Updated user profile and privileges for ${target.fullName} (${target.role})`,
       timeAgo: 'Just now',
       meta: `ID: ${target.id}`,
@@ -228,7 +228,7 @@ async function deleteUser(id: string) {
     activityLogs.value.unshift({
       id: `act-${Date.now()}`,
       actorName: authStore.user?.fullName || 'Store Owner',
-      role: authStore.currentRole,
+      role: authStore.currentRole || 'OWNER',
       actionDescription: `De-provisioned user account ID: ${id}`,
       timeAgo: 'Just now',
       meta: 'RBAC Revocation',
@@ -242,7 +242,7 @@ function handleCreateItem(payload: any) {
   activityLogs.value.unshift({
     id: `act-${Date.now()}`,
     actorName: authStore.user?.fullName || 'Store Owner',
-    role: authStore.currentRole,
+    role: authStore.currentRole || 'OWNER',
     actionDescription: `Created new catalog product: ${payload.name} (SKU: ${payload.sku})`,
     timeAgo: 'Just now',
     meta: `Price: $${payload.price} • Stock: ${payload.stock}`,
@@ -265,7 +265,7 @@ function saveItemEdits() {
     activityLogs.value.unshift({
       id: `act-${Date.now()}`,
       actorName: authStore.user?.fullName || 'Store Owner',
-      role: authStore.currentRole,
+      role: authStore.currentRole || 'OWNER',
       actionDescription: `Updated product ${target.name} (SKU: ${target.sku}) specs and price to $${target.price.toFixed(2)}`,
       timeAgo: 'Just now',
       meta: `Stock: ${target.stock}`,
@@ -309,7 +309,7 @@ function updateOrderStatus(orderId: string, newStatus: string) {
     activityLogs.value.unshift({
       id: `act-${Date.now()}`,
       actorName: authStore.user?.fullName || 'Cashier Terminal',
-      role: authStore.currentRole,
+      role: authStore.currentRole || 'CASHIER',
       actionDescription: `Updated order status for ${ord.id} to ${newStatus}`,
       timeAgo: 'Just now',
       meta: `Total: $${ord.totalAmount.toFixed(2)}`,

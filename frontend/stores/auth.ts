@@ -12,14 +12,8 @@ export interface AuthUser {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: {
-      id: 'usr-owner-01',
-      email: 'owner@biolabs.com',
-      fullName: 'Store Owner',
-      role: 'OWNER' as UserRole,
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    } as AuthUser | null,
-    token: 'jwt-mock-session-token' as string | null,
+    user: null as AuthUser | null,
+    token: null as string | null,
   }),
 
   getters: {
@@ -37,40 +31,71 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    loginAs(role: 'OWNER' | 'ADMIN' | 'CASHIER' | 'CUSTOMER') {
-      const presets: Record<'OWNER' | 'ADMIN' | 'CASHIER' | 'CUSTOMER', AuthUser> = {
-        OWNER: {
-          id: 'usr-owner',
-          email: 'owner@biolabs.com',
-          fullName: 'Store Owner',
-          role: 'OWNER',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    async login(email: string, password: string) {
+      const config = useRuntimeConfig();
+      const backendUrl = config.public.backendUrl || 'http://localhost:3001';
+      const data = await $fetch<{ accessToken: string; user: AuthUser }>(
+        `${backendUrl}/api/auth/login`,
+        {
+          method: 'POST',
+          body: { email, password },
         },
-        ADMIN: {
-          id: 'usr-admin',
-          email: 'admin@biolabs.com',
-          fullName: 'System Administrator',
-          role: 'ADMIN',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        },
-        CASHIER: {
-          id: 'usr-cashier',
-          email: 'cashier@biolabs.com',
-          fullName: 'Senior Cashier',
-          role: 'CASHIER',
-          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        },
-        CUSTOMER: {
-          id: 'usr-customer',
-          email: 'customer@biolabs.com',
-          fullName: 'Research Customer',
-          role: 'CUSTOMER',
-          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-        },
+      );
+      this.user = data.user;
+      this.token = data.accessToken;
+      return data;
+    },
+
+    async loginAs(role: 'OWNER' | 'ADMIN' | 'CASHIER' | 'CUSTOMER') {
+      const passwordMap: Record<string, string> = {
+        OWNER: 'ownerpassword',
+        ADMIN: 'adminpassword',
+        CASHIER: 'cashierpassword',
+        CUSTOMER: 'customerpassword',
+      };
+      const emailMap: Record<string, string> = {
+        OWNER: 'owner@biolabs.com',
+        ADMIN: 'admin@biolabs.com',
+        CASHIER: 'cashier@biolabs.com',
+        CUSTOMER: 'customer@biolabs.com',
       };
 
-      this.user = presets[role];
-      this.token = `jwt-token-${role.toLowerCase()}`;
+      try {
+        await this.login(emailMap[role], passwordMap[role]);
+      } catch (err) {
+        const presets: Record<'OWNER' | 'ADMIN' | 'CASHIER' | 'CUSTOMER', AuthUser> = {
+          OWNER: {
+            id: 'usr-owner',
+            email: 'owner@biolabs.com',
+            fullName: 'Store Owner',
+            role: 'OWNER',
+            avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+          },
+          ADMIN: {
+            id: 'usr-admin',
+            email: 'admin@biolabs.com',
+            fullName: 'System Administrator',
+            role: 'ADMIN',
+            avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          },
+          CASHIER: {
+            id: 'usr-cashier',
+            email: 'cashier@biolabs.com',
+            fullName: 'Senior Cashier',
+            role: 'CASHIER',
+            avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          },
+          CUSTOMER: {
+            id: 'usr-customer',
+            email: 'customer@biolabs.com',
+            fullName: 'Research Customer',
+            role: 'CUSTOMER',
+            avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+          },
+        };
+        this.user = presets[role];
+        this.token = `jwt-token-${role.toLowerCase()}`;
+      }
     },
 
     logout() {

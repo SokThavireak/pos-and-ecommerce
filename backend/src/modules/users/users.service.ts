@@ -28,7 +28,9 @@ export class UsersService {
       role: dto.role,
       avatarUrl: dto.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
     });
-    return this.userRepo.save(user);
+    const saved = await this.userRepo.save(user);
+    const { passwordHash, ...safeUser } = saved;
+    return safeUser as User;
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {
