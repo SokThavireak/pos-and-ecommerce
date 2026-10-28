@@ -306,8 +306,17 @@ const handleSubmit = async () => {
       router.push('/');
     }
   } catch (err: any) {
-    // If backend is offline or fallback requested
-    errorMessage.value = err.data?.message || 'Login failed. Please verify credentials.';
+    if (err.data?.message) {
+      errorMessage.value = err.data.message;
+    } else if (
+      err.name === 'FetchError' ||
+      err.message?.includes('fetch') ||
+      err.message?.includes('Failed')
+    ) {
+      errorMessage.value = 'Cannot connect to backend server. Please ensure "cd backend && npm run start:dev" is running.';
+    } else {
+      errorMessage.value = 'Login failed. Please verify credentials.';
+    }
   }
 };
 </script>
