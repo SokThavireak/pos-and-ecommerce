@@ -4,9 +4,9 @@
     <AdminSidebar />
 
     <!-- Brand Customization Studio Area (Full Width & Responsive) -->
-    <main v-if="authStore.isAdmin" class="flex-1 space-y-6 overflow-y-auto h-full w-full pr-1">
+    <main v-if="authStore.isAdmin" class="flex-1 flex flex-col h-full overflow-hidden space-y-6">
       <!-- Header -->
-      <header class="bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header class="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs flex-shrink-0">
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Brand Customization Studio</h1>
@@ -32,8 +32,10 @@
         </button>
       </header>
 
-      <!-- Settings Grid: Controls + Live Preview Card -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Scrollable Settings Area -->
+      <div class="flex-1 overflow-y-auto pr-1 space-y-6">
+        <!-- Settings Grid: Controls + Live Preview Card -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Controls Column (6 cols) -->
         <div class="lg:col-span-6 space-y-6">
           <!-- Identity Card -->
@@ -316,6 +318,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </main>
 

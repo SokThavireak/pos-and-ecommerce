@@ -1,15 +1,15 @@
 <template>
-  <div class="h-screen bg-[#f4f5f7] p-3 sm:p-5 flex gap-5 antialiased overflow-hidden">
+  <div class="h-screen bg-[#f4f5f7] p-4 sm:p-6 flex gap-6 antialiased overflow-hidden">
     <!-- Full-Height Floating Dark Sidebar -->
     <AdminSidebar />
 
     <!-- Main Workspace Container -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden space-y-4">
+    <main class="flex-1 flex flex-col h-full overflow-hidden space-y-6">
       <!-- Top Bar: Title & Access Guard Status -->
-      <header class="bg-white/80 backdrop-blur-md rounded-3xl p-4 sm:p-5 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs flex-shrink-0">
+      <header class="bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs flex-shrink-0">
         <div>
           <div class="flex items-center gap-2.5">
-            <h1 class="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">Database Backup & Disaster Ingest</h1>
+            <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Database Backup & Disaster Ingest</h1>
             <span class="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800">
               ADMIN EXCLUSIVE
             </span>

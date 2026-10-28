@@ -4,9 +4,9 @@
     <AdminSidebar />
 
     <!-- Main Dashboard Area -->
-    <main class="flex-1 space-y-6 overflow-y-auto h-full pr-1">
+    <main class="flex-1 flex flex-col h-full overflow-hidden space-y-6">
       <!-- Top Bar: Overview Header + Search + POS Launcher -->
-      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md rounded-3xl p-5 border border-black/5">
+      <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md rounded-3xl p-6 border border-black/5 shadow-xs flex-shrink-0">
         <div>
           <div class="flex items-center gap-3">
             <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Overview</h1>
@@ -34,16 +34,19 @@
         </div>
       </header>
 
-      <!-- Row 1: Sales Analytics (8 cols) + KPI Stack (4 cols) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <SalesAnalyticsChart :bars="monthlyBars" />
-        <KpiMetricsStack />
-      </div>
+      <!-- Scrollable Dashboard Area -->
+      <div class="flex-1 overflow-y-auto pr-1 space-y-6">
+        <!-- Row 1: Sales Analytics (8 cols) + KPI Stack (4 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <SalesAnalyticsChart :bars="monthlyBars" />
+          <KpiMetricsStack />
+        </div>
 
-      <!-- Row 2: Sales by Country (4 cols) + Top Products (8 cols) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <CountrySalesDonut />
-        <ProductSalesTable :products="topProducts" />
+        <!-- Row 2: Sales by Country (4 cols) + Top Products (8 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <CountrySalesDonut />
+          <ProductSalesTable :products="topProducts" />
+        </div>
       </div>
     </main>
   </div>
