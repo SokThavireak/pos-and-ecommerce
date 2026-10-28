@@ -24,6 +24,8 @@ export default defineNuxtConfig({
     '/about': { prerender: true },
     '/location': { prerender: true },
     '/detail': { isr: 1800 },
+    '/login': { ssr: false },
+    '/orders': { ssr: false },
     '/pos': { ssr: false },
     '/admin/**': { ssr: false },
   },
