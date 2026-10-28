@@ -43,3 +43,4 @@ export default async function handler(req: Request, res: Response) {
   const app = await createServer();
   return app(req, res);
 }
+
