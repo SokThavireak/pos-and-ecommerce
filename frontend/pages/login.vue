@@ -1,32 +1,38 @@
 <template>
   <div class="min-h-screen bg-[#0d0d0d] text-white flex flex-col justify-between p-4 sm:p-8">
     <!-- Top Navigation Bar -->
-    <header class="w-full flex items-center justify-between py-2 px-2 max-w-7xl mx-auto">
-      <NuxtLink to="/" class="flex items-center gap-2.5">
+    <header class="w-full flex items-center justify-between py-2 px-1 sm:px-2 max-w-7xl mx-auto">
+      <NuxtLink to="/" class="flex items-center gap-2 group min-w-0">
         <img
-          v-if="themeStore.logoUrl"
+          v-if="themeStore.logoUrl && !logoLoadFailed"
           :src="themeStore.logoUrl"
           :alt="themeStore.storeName || 'biolabs'"
-          class="h-9 w-auto max-w-[130px] object-contain rounded-xl"
+          @error="logoLoadFailed = true"
+          class="h-8 sm:h-9 w-auto max-w-[110px] sm:max-w-[130px] object-contain rounded-xl"
         />
         <div
           v-else
-          class="w-9 h-9 rounded-2xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-lg"
+          class="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-base sm:text-lg shrink-0"
         >
           {{ (themeStore.storeName || 'b').charAt(0).toLowerCase() }}
         </div>
-        <span class="font-bold text-lg tracking-tight">{{ themeStore.storeName || 'biolabs' }}</span>
+        <span
+          v-if="!themeStore.logoUrl || logoLoadFailed"
+          class="font-bold text-base sm:text-lg tracking-tight truncate"
+        >
+          {{ themeStore.storeName || 'biolabs' }}
+        </span>
       </NuxtLink>
 
-      <NuxtLink to="/" class="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1 font-mono">
+      <NuxtLink to="/" class="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1 font-mono shrink-0">
         ← Back to Storefront
       </NuxtLink>
     </header>
 
-    <!-- Main Content: Split 50/50 Desktop -->
-    <main class="w-full max-w-7xl mx-auto my-auto py-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-      <!-- Left Visual Showcase: 3x3 Bento Grid -->
-      <div class="lg:col-span-6 grid grid-cols-3 gap-3 p-2">
+    <!-- Main Content: Split 50/50 Desktop, Form prioritized on Mobile -->
+    <main class="w-full max-w-7xl mx-auto my-auto py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+      <!-- Left Visual Showcase: 3x3 Bento Grid (hidden on mobile, visible on lg screens) -->
+      <div class="hidden lg:grid lg:col-span-6 grid-cols-3 gap-3 p-2">
         <!-- Tile 1: Photo -->
         <div class="aspect-square rounded-3xl overflow-hidden bg-neutral-900 border border-neutral-800">
           <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400" alt="Tile" class="w-full h-full object-cover" />
@@ -271,6 +277,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const isLogin = ref(true);
+const logoLoadFailed = ref(false);
 const firstName = ref('');
 const lastName = ref('');
 const email = ref('admin@biolabs.com');
