@@ -1,40 +1,50 @@
 import { io } from 'socket.io-client';
 import { useThemeStore } from '~/stores/theme';
 
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(() => {
   const themeStore = useThemeStore();
   const config = useRuntimeConfig();
-  const backendUrl = ((config.public.backendUrl as string) || 'http://localhost:3001').replace(/\/+$/, '');
 
-  // 1. Initial Theme Settings Load
-  try {
-    const data = await $fetch<any>(`${backendUrl}/api/settings`);
-    if (data) {
-      themeStore.applyTheme(data);
-    }
-  } catch (err) {
-    // If backend isn't up yet, fallback to default editorial theme variables
-    themeStore.applyTheme({
-      colorPrimary: '#d97757',
-      colorSecondary: '#8b5cf6',
-      colorSurface: '#fdf2ee',
-      storeName: 'biolabs',
-      logoUrl: '/logo.svg',
-    });
+  // 1. Immediately apply cached theme so UI renders instantly with zero blocking
+  themeStore.loadCachedTheme();
+
+  const rawUrl = (config.public.backendUrl as string) || '';
+  const backendUrl = rawUrl.replace(/\/+$/, '');
+
+  // Skip connecting to localhost:3001 if browsing on an HTTPS deployed domain (prevents Mixed Content freeze)
+  if (
+    process.client &&
+    window.location.protocol === 'https:' &&
+    backendUrl.includes('localhost')
+  ) {
+    return;
   }
 
-  // 2. Real-time WebSocket Gateway listener
-  try {
-    const socket = io(backendUrl, {
-      autoConnect: true,
-      reconnectionAttempts: 5,
-      timeout: 3000,
-    });
+  if (backendUrl) {
+    // 2. Non-blocking background fetch for live theme
+    $fetch<any>(`${backendUrl}/api/settings`, { timeout: 3000 })
+      .then((data) => {
+        if (data) {
+          themeStore.applyTheme(data);
+        }
+      })
+      .catch(() => {
+        // Fallback silently if backend is not yet deployed
+      });
 
-    socket.on('theme:updated', (newTheme) => {
-      themeStore.applyTheme(newTheme);
-    });
-  } catch (e) {
-    console.warn('WebSocket connection not initialized', e);
+    // 3. Non-blocking WebSocket listener
+    try {
+      const socket = io(backendUrl, {
+        autoConnect: true,
+        reconnectionAttempts: 2,
+        timeout: 3000,
+      });
+
+      socket.on('theme:updated', (newTheme) => {
+        themeStore.applyTheme(newTheme);
+      });
+    } catch {
+      // ignore websocket errors
+    }
   }
 });
