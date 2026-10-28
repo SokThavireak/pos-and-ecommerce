@@ -4,7 +4,7 @@ import { useThemeStore } from '~/stores/theme';
 export default defineNuxtPlugin(async () => {
   const themeStore = useThemeStore();
   const config = useRuntimeConfig();
-  const backendUrl = config.public.backendUrl || 'http://localhost:3001';
+  const backendUrl = ((config.public.backendUrl as string) || 'http://localhost:3001').replace(/\/+$/, '');
 
   // 1. Initial Theme Settings Load
   try {

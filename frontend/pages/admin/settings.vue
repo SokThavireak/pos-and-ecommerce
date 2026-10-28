@@ -430,7 +430,7 @@ const saveTheme = async () => {
     colorSurface: surfaceColor.value,
   });
 
-  const backendUrl = config.public.backendUrl || 'http://localhost:3001';
+  const backendUrl = ((config.public.backendUrl as string) || 'http://localhost:3001').replace(/\/+$/, '');
   try {
     await $fetch(`${backendUrl}/api/settings`, {
       method: 'PATCH',

@@ -15,10 +15,15 @@ build/
 .cache/
 .data/
 
-# Environment files
+# Environment files (Root & All Subdirectories)
 .env
 .env.*
+*.env
+**/.env
+**/.env.*
+**/*.env
 !.env.example
+!**/.env.example
 
 # IDE & OS files
 .DS_Store
@@ -32,7 +37,7 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Docker volumes
+# Docker volumes & logs
 pgdata/
 *.log
 push_to_github.sh

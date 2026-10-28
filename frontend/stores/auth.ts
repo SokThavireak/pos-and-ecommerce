@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(email: string, password: string) {
       const config = useRuntimeConfig();
-      const backendUrl = config.public.backendUrl || 'http://localhost:3001';
+      const backendUrl = ((config.public.backendUrl as string) || 'http://localhost:3001').replace(/\/+$/, '');
       const data = await $fetch<{ accessToken: string; user: AuthUser }>(
         `${backendUrl}/api/auth/login`,
         {

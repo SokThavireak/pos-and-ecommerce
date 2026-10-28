@@ -16,6 +16,9 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { BackupModule } from './modules/backup/backup.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DatabaseModule } from './modules/database/database.module';
+import { getDatabaseConfig } from './database/database.config';
+import { AppController } from './app.controller';
 
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AuditRouteInterceptor } from './modules/audit/audit.interceptor';
@@ -25,17 +28,7 @@ import { ThrottleRateLimitGuard } from './common/guards/throttle-rate-limit.guar
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgrespassword',
-      database: process.env.DB_NAME || 'pos_ecommerce_db',
-      entities: [User, Category, Product, Order, OrderItem, StoreSettings],
-      synchronize: true, // Code-first automatic table generation
-      logging: false,
-    }),
+    TypeOrmModule.forRoot(getDatabaseConfig()),
     TypeOrmModule.forFeature([User, Category, Product, Order, OrderItem, StoreSettings]),
     AuthModule,
     EventsModule,
@@ -45,7 +38,9 @@ import { ThrottleRateLimitGuard } from './common/guards/throttle-rate-limit.guar
     OrdersModule,
     AuditModule,
     BackupModule,
+    DatabaseModule,
   ],
+  controllers: [AppController],
   providers: [
     DatabaseSeederService,
     {

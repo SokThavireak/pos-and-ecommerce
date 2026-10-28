@@ -24,6 +24,10 @@ POS and E-C/
 │           ├── settings/       # Dynamic white-label engine
 │           ├── catalog/        # Products & categories CRUD
 │           └── events/         # WebSocket AppGateway (Socket.io)
+├── mobile/                     # Flutter Mobile App (E-Commerce & POS Terminal)
+│   ├── pubspec.yaml
+│   ├── README.md
+│   └── lib/                    # Models, Providers, Services, Screens
 └── frontend/                   # Nuxt 3 Client Application
     ├── package.json
     ├── nuxt.config.ts          # Pinia, VueUse, Tailwind & Icons
@@ -53,14 +57,34 @@ POS and E-C/
 
 ## Quick Start Instructions
 
-### 1. Start the PostgreSQL Database
+### 1. Database Setup (Choose Local Docker OR Neon Cloud)
+
+#### Option A: Neon Serverless PostgreSQL (Cloud - Recommended)
+1. Get a connection string from [neon.tech](https://neon.tech):
+   ```
+   postgresql://neondb_owner:YOUR_PASSWORD@ep-xyz-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+2. Add it to `backend/.env`:
+   ```env
+   DATABASE_URL="postgresql://neondb_owner:YOUR_PASSWORD@ep-xyz-123456-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+   ```
+   *(Neon SSL, table creation, and seeders are automatically handled!)*
+
+#### Option B: Local Docker PostgreSQL
 ```bash
 docker compose up -d
 ```
-* PostgreSQL will run on `localhost:5432`
+* PostgreSQL will run on `localhost:5433` (or `5432`)
 * Database: `pos_ecommerce_db`
 * User: `postgres`
 * Password: `postgrespassword`
+
+---
+
+### Database Connection APIs:
+* **Check Status:** `GET http://localhost:3001/api/database/status`
+* **Test Connection:** `POST http://localhost:3001/api/database/test`
+* **Neon Setup Guide:** `GET http://localhost:3001/api/database/guide`
 
 ### 2. Start the NestJS Backend (Code-First Auto-Build & Seeder)
 ```bash
@@ -121,3 +145,27 @@ npm run dev
    * Instant search and barcode scanner listener (`8934500101`, etc.).
    * Category filter pills and touch-friendly product cards.
    * Live receipt ticket with quantity controls, discounts (0%, 5%, 10%, 15%), and instant checkout modal.
+
+---
+
+## Cross-Origin Deployment Guide (Frontend & Backend on Different Hosts)
+
+When deploying the frontend (e.g. Vercel, Netlify) and backend (e.g. Render, Railway, Fly.io) on separate domains:
+
+### 1. Backend Environment Variables (Render / Railway / Cloud)
+```env
+PORT=3001
+DATABASE_URL="postgresql://neondb_owner:YOUR_PASSWORD@ep-xyz-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+FRONTEND_URL="https://your-frontend-app.vercel.app"
+```
+
+### 2. Frontend Environment Variables (Vercel / Netlify)
+```env
+NUXT_PUBLIC_BACKEND_URL="https://your-backend-app.onrender.com"
+```
+
+### 3. Verification APIs
+* **Health & CORS Check:** `GET https://your-backend-app.onrender.com/api/health`
+* **Handshake Ping:** `GET https://your-backend-app.onrender.com/api/connectivity`
+* **Database Status:** `GET https://your-backend-app.onrender.com/api/database/status`
+
